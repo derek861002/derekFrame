@@ -1,0 +1,69 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd ">
+
+		<!-- 事务管理器
+			对mybatis操作数据库事务控制，spring使用jdbc的事务控制类
+		-->
+		<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+			<!-- 数据源
+			dataSource在applicationContext-mapper.xml中配置了
+			 -->
+			<property name="dataSource" ref="dataSource"/>
+		</bean>
+
+		<!-- 通知 -->
+		<tx:advice id="txAdvice" transaction-manager="transactionManager">
+			<tx:attributes>
+				<!-- 传播行为
+					propagation=REQUIRED:支持当前事务，如果当前没有事务，就新建一个事务。这是最常见的选择。
+					propagation=SUPPORTS:支持当前事务，如果当前没有事务，就以非事务方式执行。
+					propagation=MANDATORY:支持当前事务，如果当前没有事务，就抛出异常。
+					propagation=REQUIRES_NEW:新建事务，如果当前存在事务，把当前事务挂起。
+					propagation=NOT_SUPPORTED:以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。
+					propagation=NEVER:以非事务方式执行，如果当前存在事务，则抛出异常。
+					propagation=NESTED:如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。
+				 -->
+				<tx:method name="save*"   propagation="REQUIRED"/>
+				<tx:method name="delete*" propagation="REQUIRED"/>
+				<tx:method name="insert*" propagation="REQUIRED"/>
+				<tx:method name="update*" propagation="REQUIRED"/>
+				<tx:method name="add*"    propagation="REQUIRED"/>
+				<tx:method name="find*"   propagation="SUPPORTS" read-only="true"/>
+				<tx:method name="get*"    propagation="SUPPORTS" read-only="true"/>
+				<tx:method name="select*" propagation="SUPPORTS" read-only="true"/>
+				<tx:method name="search*" propagation="SUPPORTS" read-only="true"/>
+				<tx:method name="query*"  propagation="SUPPORTS" read-only="true"/>
+			</tx:attributes>
+		</tx:advice>
+		<!-- aop -->
+		<aop:config>
+			<aop:advisor advice-ref="txAdvice" pointcut="execution(* org.derekframe.modules.*.service.impl.*.*(..))"/>
+		</aop:config>
+
+
+	<!--配置druid监控spring jdbc-->
+	<bean id="druid-stat-interceptor"
+		  class="com.alibaba.druid.support.spring.stat.DruidStatInterceptor"/>
+
+	<bean id="druid-stat-pointcut"
+		  class="org.springframework.aop.support.JdkRegexpMethodPointcut"
+		  scope="prototype">
+		<property name="patterns">
+			<list>
+				<value>com.bmft.api.service.impl.*</value>
+			</list>
+		</property>
+	</bean>
+	<aop:config>
+		<aop:advisor advice-ref="druid-stat-interceptor" pointcut-ref="druid-stat-pointcut"/>
+	</aop:config>
+
+</beans>

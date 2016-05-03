@@ -1,0 +1,16 @@
+通用后台管理框架
+ 1.采用spring mvc + spring + mybatis + shiro + maven + mysql
+    spring   版本采用3.2.4.RELEASE
+    mybatis  版本采用3.2.8
+    shiro    版本采用1.2.3
+    maven    版本采用3.3.9
+    mysql    版本采用5.5
+ 2.JDK1.7+tomcat7.0
+
+2016-04-26
+    1.环境搭建
+      Spring + MyBatis + junit
+    2.springMVC模块搭建
+    3.shiro
+
+

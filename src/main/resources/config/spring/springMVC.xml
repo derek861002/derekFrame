@@ -1,0 +1,130 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/mvc
+		http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 加载应用属性实例，可通过  @Value("#{APP_PROP['jdbc.driver']}") String jdbcDriver 方式引用  -->
+    <util:properties id="APP_PROP" location="classpath:config/system/system.properties" local-override="true"/>
+
+    <!-- 加载配置属性文件 -->
+    <context:property-placeholder ignore-unresolvable="true" location="classpath:config/system/system.properties" />
+
+    <!-- 扫描controller（controller层注入） -->
+    <!-- <context:component-scan base-package="com.dsyc.modules.api.controller"/>-->
+    <!-- 使用Annotation自动注册Bean,只扫描@Controller -->
+    <context:component-scan base-package="org.derekframe.modules" use-default-filters="false"><!-- base-package 如果多个，用“,”分隔 -->
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!--通知spring使用cglib而不是jdk的来生成代理方法 AOP可以拦截到Controller- -->
+    <!-- 启动对@AspectJ注解的支持  -->
+   <!-- <aop:aspectj-autoproxy proxy-target-class="true" />-->
+
+    <!-- 静态资源访问 -->
+    <mvc:default-servlet-handler/>
+
+    <!--使用mvc:annotation-driven代替上边注解映射器和注解适配器
+        mvc:annotation-driven默认加载很多的参数绑定方法，比如json转换解析器就是默认加载了，
+        如果使mvc:annotation-driven不用配置上边的RequestMappingHandlerMapping和RequestMappingHandlerAdapter
+        实际开发用mvc:annotation-driven
+    -->
+    <!--<mvc:annotation-driven conversion-service="conversionService" />-->
+    <mvc:annotation-driven />
+
+    <!-- 自定义参数绑定 -->
+    <!--<bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+        &lt;!&ndash; 转换器 &ndash;&gt;
+        <property name="formatters">
+            <set>
+                &lt;!&ndash; 日期类型转换 &ndash;&gt;
+                <bean class="com.dsyc.common.custom.converter.CustomDateConverter"/>
+            </set>
+        </property>
+    </bean>-->
+
+
+    <!--视图解析器
+        解析jsp默认使用jstl标签，classpath下的得有jstl的包
+    -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--配置jsp路径的前缀-->
+        <property name="prefix" value="${web.view.prefix}"/>
+        <!--配置jsp路径的后后缀-->
+        <property name="suffix" value="${web.view.suffix}"/>
+    </bean>
+
+    <!--拦截器-->
+
+    <!--拦截器-->
+<!--    <mvc:interceptors>
+        <mvc:interceptor>
+            &lt;!&ndash; 需拦截的地址 &ndash;&gt;
+            <mvc:mapping path="/system/**"/>
+            &lt;!&ndash; 需排除拦截的地址 &ndash;&gt;
+            <mvc:exclude-mapping path="/system/login"/>
+            <mvc:exclude-mapping path="/system/timeout"/>
+            <mvc:exclude-mapping path="/system/loginDialog"/>
+            <mvc:exclude-mapping path="/system/pcrimg"/>
+            <bean id="sessionInterceptor" class="com.dsyc.common.interceptor.SessionInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>-->
+
+    <!--API拦截器-->
+       <!-- <mvc:interceptors>
+            <mvc:interceptor>
+                &lt;!&ndash; 需拦截的地址 &ndash;&gt;
+                <mvc:mapping path="/api/**"/>
+                &lt;!&ndash; 需排除拦截的地址 &ndash;&gt;
+                <mvc:exclude-mapping path="/api/user/login"/>
+                <mvc:exclude-mapping path="/api/cookerType/getImage/*"/>
+                <bean class="com.dsyc.modules.api.interceptor.APISessionInterceptor"/>
+            </mvc:interceptor>
+        </mvc:interceptors>-->
+
+    <!-- 全局异常处理器
+	只要实现HandlerExceptionResolver接口就是全局异常处理器
+	 -->
+   <!-- <bean class="com.dsyc.common.custom.exception.CustomExceptionResolver"></bean>-->
+
+
+    <!--校验器-->
+    <!--<bean id="validator"
+          class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        &lt;!&ndash;hibernate核验器&ndash;&gt;
+        <property name="providerClass" value="org.hibernate.validator.HibernateValidator"/>
+        &lt;!&ndash;指定校验使用的资源文件，在文件中配置校验错误信息，如果不指定则默认使用classpath下的ValidationMessages.properties&ndash;&gt;
+        <property name="validationMessageSource" ref="messageSource"/>
+    </bean>-->
+
+    <!--校验错误信息配置文件-->
+    <!--<bean id="messageSource"
+          class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        &lt;!&ndash;资源文件名&ndash;&gt;
+        <property name="basenames" value="classpath:config/CustomValidationMessages"/>
+        &lt;!&ndash;资源文件编码格式&ndash;&gt;
+        <property name="fileEncodings" value="utf-8"/>
+        &lt;!&ndash;对资源文件内容缓存时间，单位秒&ndash;&gt;
+        <property name="cacheSeconds" value="120"/>
+    </bean>-->
+
+    <!--文件上传-->
+   <!-- <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        &lt;!&ndash;设置上传文件的最大尺寸为5MB&ndash;&gt;
+        <property name="maxUploadSize">
+            <value>5212880</value>
+        </property>
+    </bean>-->
+</beans>
